@@ -1,10 +1,10 @@
 .data
-	array: .word 3, 2, 1, 0, 1, 2
+	array: .word 37, 29, 46, 13, 0
 	espaco: .asciiz " "
 .text
 	la $a0, array
 	la $a3, espaco
-	li $a1, 5
+	addi $a1, $zero, 5
 	
 	j sort	
 	
@@ -63,33 +63,30 @@ saida1: lw $s0, 0($sp)
 	addi $sp, $sp, 20
 	
 	
-	add $t0, $zero, $zero
-	addi $t1, $zero, 5
-	move $s2, $a0
-	move $s3, $a1
+	add $t0, $zero, $zero #$t0 = 0
+	addi $t2, $zero, 5 #$t1 = 5
+	move $t5, $a3
+	add $t3, $zero, $zero
+	move $s2, $a0 #$s2 = endereço inicial do vetor
+	
 loop_imprime: 	
-	slt $t3, $t0, $t1
-	beq $t3, $zero, fim
+
+	lw $t0, ($s2)
+	li $v0, 1
+	move $a0, $t0
+	syscall
 	
-	move $t4, $t0
-	sll $t4, $t4, 2
-	add $s2, $s2, $t4
-	lw $t5, 0($s2)
-	
-	move $t6, $a0
+	li $v0, 4
 	move $a0, $t5
 	syscall
-	move $a0, $a3
-	syscall		
-	move $a0, $t6	
-	
-	addi $t0, $t0, 1
-	j loop_imprime
-
-fim:
 			
+	addi $s2, $s2, 4	
+	addi $t3, $t3, 1
+	slt  $t4, $t3, $t2
+	bne $t4, $zero, loop_imprime
+	#birrrlll pooorra
 
-	jr $ra
+fim:	jr $ra
 
 	
 	
