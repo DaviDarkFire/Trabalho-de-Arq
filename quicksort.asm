@@ -9,20 +9,22 @@
 #t1: comparação
 
 .data
-	array: .word 37, 29, 46, 13, 0, 1#array porra
+	array: .word 37, 29, 46, 13, 0
 	espaco: .asciiz " " #isso serve pra depois imprimir os numeros com espaço
 .text
 	la $a2, array
+	add  $s3, $zero, $zero
+	addi $s4, $zero, 4	
 	quicksort:
-		addi $sp, $sp, -20 #abre espaço na sp
-		sw $s1, 0($sp) #salva o j
-		sw $s3, 4($sp) #salva o p
-		sw $s4, 8($sp) #salva o r
-		sw $a0, 12($sp)
-		sw $a1, 16($sp)
+		addi $sp, $sp, -24 #abre espaço na sp
+		sw $s1, 20($sp) #salva o j
+		sw $s3, 16($sp) #salva o p
+		sw $s4, 12($sp) #salva o r
+		sw $a0, 8($sp)
+		sw $a1, 4($sp)
+		sw $ra, 0($sp)
+			
 		
-		add  $s3, $zero, $zero
-		addi $s4, $zero, 5
 		slt $t1, $s3, $s4 # t1 = 1 if(p < q)
 		beq $t1, $zero, end #vai para end se t1 == 0
 		
@@ -40,12 +42,13 @@
 			bne $t1, $zero, while #vai para while se t1 == 1
 		
 		end: 
-			lw $s1, 0($sp) #carrega o j
-			lw $s3, 4($sp) #carrega o p
-			lw $s4, 8($sp) #carrega o r
-			lw $a0, 12($sp)
-			lw $a1, 16($sp)
-			addi $sp, $sp, 20
+			lw $ra, 0($sp)
+			lw $a1, 4($sp)
+			lw $a0, 8($sp)			
+			lw $s4, 12($sp) #carrega o r	
+			lw $s3, 16($sp) #carrega o p					
+			lw $s1, 20($sp) #carrega o j			
+			addi $sp, $sp, 24
 			
 			jr $ra
 
@@ -58,13 +61,13 @@
 #a0: parametro p
 #a1: parametro r
 	separa:
-		addi $sp, $sp, -24
-		sw $s1, 0($sp)
-		sw $s2, 4($sp)
-		sw $s2, 8($sp)
-		sw $a0, 12($sp)
-		sw $a1, 16($sp)
-		sw $t1, 20($sp)
+		addi $sp, $sp, -20
+		sw $s1, 16($sp)
+		sw $s2, 12($sp)
+		sw $a0, 8($sp)
+		sw $a1, 4($sp)
+		sw $t1, 0($sp)
+
 		
 		addi $s1, $a0, 1 #i = p+1
 		sll $t1, $a0, 2 #aux p = p * 4
@@ -89,6 +92,7 @@
 				slt $t1, $s0, $t3 #t1 = 1 se c<v[i]						
 				or $t4, $t0, $t1
 			
+							
 				bne $t4, $zero, laço2
 				addi $s1, $s1, 1 #i++		
 
@@ -161,11 +165,11 @@
 			addi $v0, $s3, 0 #v0 = j
 			
 			
-			lw $s1, 0($sp)
-			lw $s2, 4($sp)
-			lw $s2, 8($sp)
-			lw $a0, 12($sp)
-			lw $a1, 16($sp)
-			lw $t1, 20($sp)
-			addi $sp, $sp, 24
+			lw $t1, 0($sp)
+			lw $a1, 4($sp)
+			lw $a0, 8($sp)
+			lw $s2, 12($sp)
+			lw $s1, 16($sp)
+									
+			addi $sp, $sp, 20
 			jr $ra
