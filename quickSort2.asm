@@ -1,14 +1,18 @@
 .data
 	array: .word 37, 29, 46, 13, 0, 28, 1, 38, 22, 6, 123, 11, 458, 111, 27, 2, 25, 14, 13, 15, 13, 33, 30, 45, 16, 17, 18, 19, 20, 24, 34, 0, 0, 28, 61, 31, 91, 92, 97, 23, 1, 0, 32, 44, 66, 67, 55, 12, 1, 7 #array porra
+	espaco: .asciiz " "
+	quick: .asciiz "QuickSort:"
 .text
+	
+	
 	la $a0, array #carrega o endereço inicial da array em $a0
 	addi $a1, $zero, 50 #carrega em $a1 a quantidade de elementos do array
-	Jal quicksort #vai para a função quicksort
+	jal quicksort #vai para a função quicksort
+	jal print
 
 	li $v0, 10 #termina a execução do código
 	syscall
-
-
+	
 quicksort:
 	  add $t0, $zero, $zero #t0 = 0
 	  addi $t1, $a1, -1 # subtrai 1 de $t1
@@ -17,7 +21,7 @@ quicksort:
 	
 	  addi $sp, $sp, -4 #cria um espaço na pilha
 	  sw $ra, 0($sp) #guarda o endereço de retorno
-	  Jal ordena # chama a função ordena
+	  jal ordena # chama a função ordena
 	  lw $ra, 0($sp) # guarda o endereço de retorno na pilha
 	  addi $sp, $sp, 4 # restaura o tamanho normal da pilha
 
@@ -27,44 +31,54 @@ quicksort:
 
 ordena:
 	  add $t0, $a1, $a2 #$t0 = $a1 + $a2
-	  sra $t0, $t0, 1 # divide $t0 por 2 e coloca o valor de volta em $t0
-  	  sll $t0, $t0, 2 # multiplica o valor de $t0 por 2
-	  add $t0, $t0, $a0 #
-	  lw $s0, 0($t0)
-	  move $s1, $a1 #i
-	  move $s2, $a2 #j
+	  sra $t0, $t0, 1 # pega a soma e divide por 2 pra achar o pivo
+  	  sll $t0, $t0, 2 # multiplica o valor de $t0 por 4 para corresponder a posição da memória
+	  add $t0, $t0, $a0 #pega o valor e soma com a posição da memória atual pra conseguir a posição de memória do pivo 
+	  lw $s0, 0($t0) #pega o pivo da memória de endereço guardado em $t0
+	  move $s1, $a1 #passa o valor do parametro $a1 pra $s1
+	  move $s2, $a2 #passa o valor do parametro $a2 pra $s2
 	
 enquanto_1:
 	    slt $t0, $s2, $s1 #condição do while
 	    bne $t0, $zero, fim_enquanto_1 # enquanto $s2 < $s1 
 	    
 	enquanto_2:
-	      sll $t0, $s1, 2 #multiplica $s1 por 2 e coloca em $t0
-	      add $t0, $t0, $a0
+	      #ve se v[i] < que o pivo conseguido
+	      sll $t0, $s1, 2 
+	      add $t0, $t0, $a0 
 	      lw $t0, 0($t0)
 	      slt $t0, $t0, $s0
 	      beq $t0, $zero, fim_enquanto_2
+	      # ve se i < dir
 	      slt $t0, $s1, $a2
 	      beq $t0, $zero, fim_enquanto_2
-	      addi $s1, $s1, 1
+	      #se as duas consições forem satisfeitas incrementa 1 em i volta para o enquanto_2	      
+	      addi $s1, $s1, 1	      
 	      j enquanto_2
 	fim_enquanto_2:
 	
 	enquanto_3:
+	      #ve se v[j] > pivo
 	      sll $t0, $s2, 2
 	      add $t0, $t0, $a0
 	      lw $t0, 0($t0)
 	      slt $t0, $s0, $t0
 	      beq $t0, $zero, fim_enquanto_3
+	      #ve se j > esq      
 	      slt $t0, $a1, $s2
 	      beq $t0, $zero, fim_enquanto_3
-	      addi $s2, $s2, -1
+	      #se as duas condições forem satisfeitas decrementa j e volta no enquanto_3	      
+	      addi $s2, $s2, -1 
 	      j enquanto_3
 	fim_enquanto_3:
 	
-	#IF_1:
+	se1:
 	      slt $t0, $s2, $s1
 	      bne $t0, $zero, fim_se_1
+	      #se i <= j troca
+	      #v[i] = v[j]
+	      #v[j] = v[i]
+	      #ou seja troca os números de posição
       	      sll $t0, $s1, 2
 	      add $t0, $t0, $a0
 	      lw $t1, 0($t0)
@@ -79,7 +93,8 @@ enquanto_1:
 	j enquanto_1
 		
 fim_enquanto_1:
-	#IF_2:
+	se2:  # se j > esq chama a função ordena com esq na
+	      #pos inicial e j na pos final do vetor
 	      slt $t0, $a1, $s2
 	      beq $t0, $zero, fim_se_2
 	      addi $sp, $sp, -12
@@ -87,24 +102,63 @@ fim_enquanto_1:
 	      sw $s1, 4($sp)
 	      sw $ra, 8($sp)
 	      add $a2, $s2, $zero
-	      Jal ordena
+	      jal ordena
        	      lw $a2, 0($sp)
 	      lw $s1, 4($sp)
 	      lw $ra, 8($sp)
 	      addi $sp, $sp, 12
 	fim_se_2: 
-	#IF_3: 
+	se3:  #se i < dir chama a função ordena com i na posição
+	      #inicial e dir na posição final do vetor
 	      slt $t0, $s1, $a2
 	      beq $t0, $zero, fim_se_3
 	      addi $sp, $sp, -4
 	      sw $ra, 0($sp)
 	      move $a1, $s1
-	      Jal ordena
+	      jal ordena
 	      lw $ra, 0($sp)
               addi $sp, $sp, 4
 	fim_se_3:
 	add $v0, $zero, $a0
-	Jr $ra
+	#finaliza tudo chamando a sub-rotina que chamou a função quick sort
+	jr $ra
+
+print:		
+	li $v0, 4                    # indica para que o syscall realize a função de impressão de string
+	la $a0, quick                # passa o endereço da string a ser impressa
+	syscall                      # chama o syscall
+	
+	
+	
+	li $v0, 11 # imprime uma quebra de linha na tela
+	addi $a0, $zero, 10
+	syscall
+	
+	la $a3, espaco
+	
+	la $a2, array
+	add $t0, $zero, $zero        #$t0 = 0
+	addi $t2, $zero, 50          # valor até o qual o for vai
+	move $t5, $a3 
+	add $t3, $zero, $zero        #valor inicial da variável contadora
+	move $s2, $a2 		     #$s2 = endereço inicial do vetor				
+loop_imprime2: 	
+
+	lw $t0, 0($s2)               #pega o valor do array e joga para o registrador
+	li $v0, 1                    # indica para que o syscall realize a função de impressão de inteiro 
+	move $a0, $t0                #passa o valor a ser escrito
+	syscall   		     #chama o syscall	
+	
+	li $v0, 4                    # indica para que o syscall realize a função de impressão de string
+	move $a0, $t5                # passa o endereço da string a ser impressa
+	syscall                      # chama o syscall			
+	
+	addi $s2, $s2, 4             #vai para a próxima posição do vetor
+	addi $t3, $t3, 1             #incrementa um no contador
+	slt  $t4, $t3, $t2           # ve se o contador ainda é menor
+				
+	bne $t4, $zero, loop_imprime2 # se ainda for menor retorna no loop de impressão
+
 	  
 	  
 	  
